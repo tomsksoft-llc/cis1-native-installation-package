@@ -1,0 +1,41 @@
+#!/bin/bash
+
+git clone https://github.com/tomsksoft-llc/cis1-libs-py.git src
+
+cd src
+
+cis_version=$( cat version.txt )
+component_version=$( git rev-parse --short HEAD )
+
+cp lib_config.py.sample lib_config.py
+
+sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3\x27/g' lib_config.py
+
+python3 lib_full_test.py
+
+if [ $? -eq 0 ]
+then
+  echo "Tests finished successfully"
+else
+  echo "Tests failed"
+  exit 1
+fi
+
+mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
+cp lib_config.py.sample $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
+VER="$cis_version.$component_version.$build_number"
+echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
+
+URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
+
+MAILS=$( $cis_base_dir/core/$getvalue mails )
+
+if [ -z "$MAILS" ]
+then
+  MAILS=$( cat "$cis_base_dir/jobs/$job_name/../default_mails" )
+fi
+
+for MAIL in $MAILS; do
+    printf "You can get it here: $URL\nBuild version: $VER" | mail -s "New pythonlibs build" $MAIL
+done

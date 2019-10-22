@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ -z "$MAILS" ]
+then
+  MAILS=$( cat "$cis_base_dir/jobs/$job_name/../default_mails" )
+fi
+
+$cis_base_dir/core/$setvalue mails $MAILS
+
+$cis_base_dir/core/$startjob cis_build/build_core
+$cis_base_dir/core/$startjob cis_build/build_webui
+$cis_base_dir/core/$startjob cis_build/build_pythonlibs

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+git clone https://github.com/tomsksoft-llc/cis1-core-native.git src
+
+cd src
+
+cis_version=$( cat version.txt )
+component_version=$( cat component_version.txt )
+
+mkdir build
+cd build
+
+source $cis_base_dir/jobs/$job_name/../setup_env.sh
+
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+conan install .. --profile $cis_base_dir/jobs/$job_name/../conan_profile -s build_type=Release --build=missing
+
+cmake .. -DBUILD_TESTING=True -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++"
+
+cmake --build .
+
+./test_package/bin/tests
+
+if [ $? -eq 0 ]
+then
+  echo "Tests finished successfully"
+else
+  echo "Tests failed"
+  exit 1
+fi
+
+mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
+mv bin $cis_base_dir/jobs/$job_name/$build_number/artifacts
+VER="$cis_version.$component_version.$build_number"
+echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
+
+URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
+
+MAILS=$( $cis_base_dir/core/$getvalue mails )
+
+if [ -z "$MAILS" ]
+then
+  MAILS=$( cat "$cis_base_dir/jobs/$job_name/../default_mails" )
+fi
+
+for MAIL in $MAILS; do
+    printf "You can get it here: $URL\nBuild version: $VER" | mail -s "New cis core build" $MAIL
+done

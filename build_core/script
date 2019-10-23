@@ -4,8 +4,7 @@ git clone https://github.com/tomsksoft-llc/cis1-core-native.git src
 
 cd src
 
-cis_version=$( cat version.txt )
-component_version=$( cat component_version.txt )
+full_version=$( cat version.txt )
 
 mkdir build
 cd build
@@ -31,7 +30,7 @@ fi
 
 mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
 mv bin $cis_base_dir/jobs/$job_name/$build_number/artifacts
-VER="$cis_version.$component_version.$build_number"
+VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
 
 URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"

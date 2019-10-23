@@ -20,7 +20,7 @@ else
   exit 1
 fi
 
-./package.sh
+./package.sh ../artifacts
 
 VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt

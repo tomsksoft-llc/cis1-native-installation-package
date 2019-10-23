@@ -30,6 +30,7 @@ fi
 
 mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
 mv bin $cis_base_dir/jobs/$job_name/$build_number/artifacts
+cp ../example_config.ini $cis_base_dir/jobs/$job_name/$build_number/artifacts/
 VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
 

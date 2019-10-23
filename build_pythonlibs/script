@@ -21,8 +21,7 @@ else
   exit 1
 fi
 
-mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
-cp lib_config.py.sample $cis_base_dir/jobs/$job_name/$build_number/artifacts
+./package.sh
 
 VER="$cis_version.$component_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt

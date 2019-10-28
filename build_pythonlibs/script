@@ -6,13 +6,17 @@ cd src
 
 full_version=$( cat version.txt )
 
-cp lib_config.py.sample lib_config.py
-
-sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3\x27/g' lib_config.py
+cp cis1-libs/lib_config.py.sample tests/lib_config.py
 
 python3 -m pip install --user -r requirements.txt
 
+cd tests
+
+sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3\x27/g' lib_config.py
+
 python3 lib_full_test.py
+
+cd ..
 
 if [ $? -eq 0 ]
 then
@@ -22,7 +26,9 @@ else
   exit 1
 fi
 
-./package.sh ../artifacts
+mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
+cp cis1-libs/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
 
 VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt

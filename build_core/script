@@ -29,9 +29,16 @@ else
 fi
 
 mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
-mv bin $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
+cp bin/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
+cd $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
 VER="$full_version.$build_number"
+
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
+
+tar -czf ../artifacts.tgz *
 
 URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
 

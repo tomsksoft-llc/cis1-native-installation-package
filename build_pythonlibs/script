@@ -1,22 +1,18 @@
 #!/bin/bash
 
-git clone https://github.com/tomsksoft-llc/cis1-libs-py.git src
+git clone https://github.com/tomsksoft-llc/ci-py-lib.git src
 
 cd src
 
-full_version=$( cat version.txt )
+cp lib-utils/lib_config.py.sample tests/lib_config.py
 
-cp cis1-libs/lib_config.py.sample tests/lib_config.py
-
-python3 -m pip install --user -r requirements.txt
+python3.7 -m pip install --user -r lib-utils/requirements.txt
 
 cd tests
 
-sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3\x27/g' lib_config.py
+sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3.7\x27/g' lib_config.py
 
-python3 lib_full_test.py
-
-cd ..
+python3.7 lib_full_test.py
 
 if [ $? -eq 0 ]
 then
@@ -26,12 +22,22 @@ else
   exit 1
 fi
 
+cd ../lib-utils
+
+full_version=$( python3.7 util_sample.py -v )
+
+cd ..
+
 mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
 
-cp cis1-libs/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
+cp lib-utils/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
 
 VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
+
+cd $cis_base_dir/jobs/$job_name/$build_number/artifacts
+
+tar -czf ../artifacts.tgz *
 
 URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
 

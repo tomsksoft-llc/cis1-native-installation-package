@@ -1,4 +1,5 @@
 default_mails
 conan_profile
 setup_env.sh
+*/shared_srcs
 */[0-9][0-9][0-9][0-9][0-9][0-9]

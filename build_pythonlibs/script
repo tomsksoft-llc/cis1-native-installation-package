@@ -1,43 +1,34 @@
 #!/bin/bash
 
-git clone https://github.com/tomsksoft-llc/ci-py-lib.git src
-
-cd src
-
-cp lib-utils/lib_config.py.sample tests/lib_config.py
-
-python3.7 -m pip install --user -r lib-utils/requirements.txt
-
-cd tests
-
-sed -i'' -e 's/PYTHON2 = \x27python\x27/PYTHON2 = \x27python2\x27/g; s/PYTHON3 = \x27python\x27/PYTHON3 = \x27python3.7\x27/g' lib_config.py
-
-python3.7 lib_full_test.py
-
-if [ $? -eq 0 ]
-then
-  echo "Tests finished successfully"
+if [[ -d ../shared_srcs ]]; then
+    echo "Updating sources..."
+    cd ../shared_srcs
+    git pull
+    cd ../${build_number}
 else
-  echo "Tests failed"
-  exit 1
+    echo "Cloning sources..."
+    git clone https://github.com/tomsksoft-llc/ci-py-lib.git ../shared_srcs
 fi
 
-cd ../lib-utils
+mkdir artifacts
 
-full_version=$( python3.7 util_sample.py -v )
+echo "Running build script..."
 
-cd ..
+. $cis_base_dir/jobs/$job_name/shared_srcs/.tscis/build.sh
 
-mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
+echo "Packing artifacts..."
 
-cp lib-utils/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
+full_version=$( python3 build/lib-utils/util_sample.py -v )
 
 VER="$full_version.$build_number"
-echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
 
 cd $cis_base_dir/jobs/$job_name/$build_number/artifacts
 
+echo $VER > build_version.txt
+
 tar -czf ../artifacts.tgz *
+
+echo "Sending emails..."
 
 URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
 

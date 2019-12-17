@@ -1,36 +1,26 @@
 #!/bin/bash
 
-git clone https://github.com/tomsksoft-llc/cis1-core-native.git src
+if [[ -d ../shared_srcs ]]; then
+    echo "Updating sources..."
+    cd ../shared_srcs
+    git pull
+    cd ../${build_number}
+else
+    echo "Cloning sources..."
+    git clone https://github.com/tomsksoft-llc/cis1-core-native.git ../shared_srcs
+fi
 
-cd src
-
-full_version=$( cat version.txt )
-
-mkdir build
-cd build
+full_version=$( cat ../shared_srcs/version.txt )
 
 source $cis_base_dir/jobs/$job_name/../setup_env.sh
 
-conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-conan install .. --profile $cis_base_dir/jobs/$job_name/../conan_profile -s build_type=Release --build=missing
+mkdir artifacts
 
-cmake .. -DBUILD_TESTING=True -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++"
+echo "Running build script..."
 
-cmake --build .
+. $cis_base_dir/jobs/$job_name/shared_srcs/.tscis/build.sh
 
-./test_package/bin/tests
-
-if [ $? -eq 0 ]
-then
-  echo "Tests finished successfully"
-else
-  echo "Tests failed"
-  exit 1
-fi
-
-mkdir $cis_base_dir/jobs/$job_name/$build_number/artifacts
-
-cp bin/* $cis_base_dir/jobs/$job_name/$build_number/artifacts
+echo "Packing artigacts..."
 
 cd $cis_base_dir/jobs/$job_name/$build_number/artifacts
 
@@ -39,6 +29,8 @@ VER="$full_version.$build_number"
 echo $VER > $cis_base_dir/jobs/$job_name/$build_number/artifacts/build_version.txt
 
 tar -czf ../artifacts.tgz *
+
+echo "Sending emails..."
 
 URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
 

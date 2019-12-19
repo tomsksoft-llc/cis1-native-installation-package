@@ -7,6 +7,54 @@ fi
 
 $cis_base_dir/core/$setvalue mails $MAILS
 
+echo "Building core..."
+
 $cis_base_dir/core/$startjob cis_build/build_core
+
+if [ $? -ne 0 ]
+then
+  echo "Failed to build core!"
+  exit 1
+fi
+
+core_build_number=$( $cis_base_dir/core/$getvalue last_job_build_number )
+core_build_dir=$cis_base_dir/jobs/$job_name/../build_core/$core_build_number
+
+echo "Building webui..."
+
 $cis_base_dir/core/$startjob cis_build/build_webui
+
+if [ $? -ne 0 ]
+then
+  echo "Failed to build webui!"
+  exit 1
+fi
+
+webui_build_number=$( $cis_base_dir/core/$getvalue last_job_build_number )
+webui_build_dir=$cis_base_dir/jobs/$job_name/../build_webui/$webui_build_number
+
+echo "Building python libs..."
+
 $cis_base_dir/core/$startjob cis_build/build_pythonlibs
+
+if [ $? -ne 0 ]
+then
+  echo "Failed to build python libs!"
+  exit 1
+fi
+
+pythonlibs_build_number=$( $cis_base_dir/core/$getvalue last_job_build_number )
+pythonlibs_build_dir=$cis_base_dir/jobs/$job_name/../build_pythonlibs/$pythonlibs_build_number
+
+mkdir artifacts
+cd artifacts
+
+/$core_build_dir/artifacts/deploy/deploy.py --execs_dir $core_build_dir/artifacts --deploy_dir `pwd`/cis --disable-check
+
+mkdir cis/webui
+cp -r $webui_build_dir/artifacts/* cis/webui
+
+mkdir cis/lib
+cp -r $pythonlibs_build_dir/artifacts/* cis/lib/
+
+tar -czf ../cis-native-installation-package.tgz cis

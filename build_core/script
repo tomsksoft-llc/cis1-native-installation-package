@@ -18,7 +18,9 @@ mkdir artifacts
 
 echo "Running build script..."
 
-. $cis_base_dir/jobs/$job_name/shared_srcs/.tscis/build.sh
+/$cis_base_dir/jobs/$job_name/shared_srcs/.tscis/build.sh
+
+cp -r $cis_base_dir/jobs/$job_name/shared_srcs/deploy artifacts/deploy
 
 echo "Packing artigacts..."
 

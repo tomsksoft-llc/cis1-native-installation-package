@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [[ -d ../shared_srcs ]]; then
     echo "Updating sources..."
     cd ../shared_srcs
@@ -22,7 +24,7 @@ echo "Running build script..."
 
 cp -r $cis_base_dir/jobs/$job_name/shared_srcs/deploy artifacts/deploy
 
-echo "Packing artigacts..."
+echo "Packing artifacts..."
 
 cd $cis_base_dir/jobs/$job_name/$build_number/artifacts
 

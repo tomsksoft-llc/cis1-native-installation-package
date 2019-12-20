@@ -58,3 +58,18 @@ mkdir cis/lib
 cp -r $pythonlibs_build_dir/artifacts/* cis/lib/
 
 tar -czf ../cis-native-installation-package.tgz cis
+
+echo "Sending emails..."
+
+URL="cis.tomsksoft:$cis_base_dir/jobs/$job_name/$build_number/artifacts"
+
+MAILS=$( $cis_base_dir/core/$getvalue mails )
+
+if [ -z "$MAILS" ]
+then
+  MAILS=$( cat "$cis_base_dir/jobs/$job_name/../default_mails" )
+fi
+
+for MAIL in $MAILS; do
+    printf "You can get it here: $URL\nBuild version: $VER" | mail -s "New pythonlibs build" $MAIL
+done

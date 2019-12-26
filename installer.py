@@ -8,8 +8,10 @@ import tarfile
 import subprocess
 import tempfile
 import os
+import stat
+import shutil
 
-fname = 'cis-native-installation-package.tar.gz'
+fname = 'cis-native-installation-package.tgz'
 
 def load_releases(prereleases):
     response = requests.get('https://api.github.com/repos/tomsksoft-llc/cis1-native-installation-package/releases')
@@ -51,8 +53,8 @@ def pick_release(releases):
         if c == 'n' and page < len(release_pages):
             page += 1
             continue
-        if int(c) in range(1, len(release_pages[page - 1])):
-            release = release_pages[page - 1][int(c)]
+        if int(c) in range(1, len(release_pages[page - 1]) + 1):
+            release = release_pages[page - 1][int(c) - 1]
             continue
         raise Exception('Incorrect input')
 
@@ -65,7 +67,7 @@ def download(directory, url, name):
         headers={'Accept': 'application/octet-stream'})
 
     if r.status_code == 200:
-        with open(name, 'wb') as f:
+        with open(os.path.join(directory, name), 'wb') as f:
             for chunk in r:
                 f.write(chunk)
 
@@ -73,6 +75,11 @@ def unpack(output, input=fname):
     tar = tarfile.open(fname, "r:gz")
     tar.extractall(path = output)
     tar.close()
+
+def make_executable(path):
+    mode = os.stat(path).st_mode
+    mode |= (mode & 0o444) >> 2    # copy R bits to X
+    os.chmod(path, mode)
 
 def main(argv = None):
     parser = argparse.ArgumentParser(
@@ -109,12 +116,20 @@ def main(argv = None):
     args = parser.parse_args()
 
     if args.archive == None:
-        directory = tempfile.TemporaryDirectory()
+        directory = tempfile.mkdtemp()
         releases = load_releases(args.prerelease)
         release = pick_release(releases) if args.interactive else releases[0]
         for asset in release['assets']:
             download(directory, asset['url'], asset['name'])
-        subprocess.run(["installer.py", "--dir", args.dir, "--archive", os.path.join(directory, fname)], check=True)
+        installer_exe = os.path.join(directory, "installer.py")
+        make_executable(installer_exe)
+        subprocess.run([
+            installer_exe,
+            "--dir",
+            args.dir,
+            "--archive",
+            os.path.join(directory, fname)], check=True)
+        shutil.rmtree(directory)
     else:
         unpack(output = args.dir)
 

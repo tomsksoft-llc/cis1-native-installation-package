@@ -22,6 +22,10 @@ echo "Running build script..."
 
 $cis_base_dir/jobs/$job_name/shared_srcs/.tscis/build.sh
 
+echo "Cloning frontend..."
+
+git clone https://github.com/tomsksoft-llc/cis1-webui-native-front-vanilla.git artifacts/www
+
 echo "Packing artifacts..."
 
 cd $cis_base_dir/jobs/$job_name/$build_number/artifacts

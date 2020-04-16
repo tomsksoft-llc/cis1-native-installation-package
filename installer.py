@@ -72,7 +72,7 @@ def download(directory, url, name):
                 f.write(chunk)
 
 def unpack(output, input=fname):
-    tar = tarfile.open(fname, "r:gz")
+    tar = tarfile.open(input, "r:gz")
     tar.extractall(path = output)
     tar.close()
 
